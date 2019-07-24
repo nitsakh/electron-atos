@@ -11,8 +11,9 @@ module.exports = (options, callback) => {
   const {version, quiet, file, mas, force} = options
   const platform = options.mas ? 'mas' : 'darwin'
   const directory = path.join(__dirname, 'cache', version + '-' + platform)
+  const content = fs.readFileSync(file, 'utf8')
 
-  const addresses = getAddresses(file)
+  const addresses = getAddresses(content)
 
   download({version, quiet, directory, platform, force}, (error) => {
     if (error != null) return callback(error)
@@ -30,8 +31,16 @@ module.exports = (options, callback) => {
     }, (err, syms) => {
       if (err) callback(err)
       const concatted = syms.reduce((m, o) => m.concat(o), [])
-      const sorted = concatted.sort((a, b) => a.i - b.i)
-      callback(null, sorted.map(x => x.symbol))
+
+      let split = content.split('\n')
+      concatted.map((sym) => {
+        split[sym.i] = sym.symbol
+      })
+      const parsed = path.parse(file)
+      const dest = path.join(parsed.dir, parsed.name + '_symbolicated' + parsed.ext)
+      fs.writeFileSync(dest, split.join('\n'))
+
+      callback(null, dest)
     })
   })
 }
@@ -84,18 +93,16 @@ const symbolicate = async ({library, image, addresses}) => {
 }
 
 const groupBy = (xs, f) => {
-  const groups = new Map
+  const groups = new Map()
   for (const x of xs) {
     const key = f(x)
-    if (!groups.has(key))
-      groups.set(key, [])
+    if (!groups.has(key)) { groups.set(key, []) }
     groups.get(key).push(x)
   }
   return Array.from(groups.values())
 }
 
-const getAddresses = (file) => {
-  const content = fs.readFileSync(file, 'utf8')
+const getAddresses = (content) => {
   const addresses = []
   content.split('\n').forEach((line, i) => {
     const parser = /load address/.test(line) ? parseSamplingAddress : parseAddress
@@ -162,7 +169,7 @@ const getLibraryPath = (rootDirectory, library) => {
     default:
       return [
         path.join(rootDirectory, 'Electron Framework.dSYM', 'Contents', 'Resources', 'DWARF', 'Electron Framework'),
-        path.join(rootDirectory, 'Electron Framework.framework.dSYM', 'Contents', 'Resources', 'DWARF', 'Electron Framework'),
+        path.join(rootDirectory, 'Electron Framework.framework.dSYM', 'Contents', 'Resources', 'DWARF', 'Electron Framework')
       ].find(fs.existsSync)
   }
 }
