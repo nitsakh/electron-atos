@@ -36,11 +36,7 @@ module.exports = (options, callback) => {
       concatted.map((sym) => {
         split[sym.i] = sym.symbol
       })
-      const parsed = path.parse(file)
-      const dest = path.join(parsed.dir, parsed.name + '_symbolicated' + parsed.ext)
-      fs.writeFileSync(dest, split.join('\n'))
-
-      callback(null, dest)
+      callback(null, split)
     })
   })
 }

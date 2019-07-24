@@ -6,23 +6,18 @@ const path = require('path')
 const {describe, it} = global
 
 describe('atos', function () {
-  after(() => {
-    output_files.map((file) => fs.unlinkSync(file))
-  })
-
   this.timeout(60000)
 
   const fixtures = path.join(__dirname, 'fixtures')
-  let output_files = []
+
   it('returns an array of symbols for an Electron framework address', (done) => {
     atos({
       file: path.join(fixtures, 'framework-addresses.txt'),
       version: '1.4.14'
-    }, (error, output) => {
+    }, (error, symbols) => {
       if (error != null) return done(error)
 
-      output_files.push(output)
-      assert.equal(fs.readFileSync(output, 'utf8').trim(), fs.readFileSync(path.join(fixtures, 'framework-symbols.txt'), 'utf8').trim())
+      assert.equal(symbols.join('\n').trim(), fs.readFileSync(path.join(fixtures, 'framework-symbols.txt'), 'utf8').trim())
       done()
     })
   })
@@ -31,11 +26,10 @@ describe('atos', function () {
     atos({
       file: path.join(fixtures, 'node-addresses.txt'),
       version: '1.4.14'
-    }, (error, output) => {
+    }, (error, symbols) => {
       if (error != null) return done(error)
 
-      output_files.push(output)
-      assert.equal(fs.readFileSync(output, 'utf8').trim(), fs.readFileSync(path.join(fixtures, 'node-symbols.txt'), 'utf8').trim())
+      assert.equal(symbols.join('\n').trim(), fs.readFileSync(path.join(fixtures, 'node-symbols.txt'), 'utf8').trim())
       done()
     })
   })
@@ -44,11 +38,10 @@ describe('atos', function () {
     atos({
       file: path.join(fixtures, 'mixed-addresses.txt'),
       version: '1.4.14'
-    }, (error, output) => {
+    }, (error, symbols) => {
       if (error != null) return done(error)
 
-      output_files.push(output)
-      assert.equal(fs.readFileSync(output, 'utf8').trim(), fs.readFileSync(path.join(fixtures, 'mixed-symbols.txt'), 'utf8').trim())
+      assert.equal(symbols.join('\n').trim(), fs.readFileSync(path.join(fixtures, 'mixed-symbols.txt'), 'utf8').trim())
       done()
     })
   })
@@ -57,11 +50,10 @@ describe('atos', function () {
     atos({
       file: path.join(fixtures, 'sampling-addresses.txt'),
       version: '1.6.8'
-    }, (error, output) => {
+    }, (error, symbols) => {
       if (error != null) return done(error)
 
-      output_files.push(output)
-      assert.equal(fs.readFileSync(output, 'utf8').trim(), fs.readFileSync(path.join(fixtures, 'sampling-symbols.txt'), 'utf8').trim())
+      assert.equal(symbols.join('\n').trim(), fs.readFileSync(path.join(fixtures, 'sampling-symbols.txt'), 'utf8').trim())
       done()
     })
   })
